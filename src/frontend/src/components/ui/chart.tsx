@@ -69,10 +69,21 @@ function ChartContainer({
   );
 }
 
+const CSS_IDENT_PATTERN = /^[A-Za-z0-9_-]+$/;
+const CSS_COLOR_PATTERN = /^[A-Za-z0-9_\-#(),.%\s]+$/;
+
+const isSafeCssIdentifier = (value: string) => CSS_IDENT_PATTERN.test(value);
+const isSafeCssColor = (value: string) => CSS_COLOR_PATTERN.test(value);
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([, config]) => config.theme || config.color,
+    ([key, config]) =>
+      isSafeCssIdentifier(key) && (config.theme || config.color),
   );
+
+  if (!isSafeCssIdentifier(id)) {
+    return null;
+  }
 
   if (!colorConfig.length) {
     return null;
@@ -91,7 +102,9 @@ ${colorConfig
     const color =
       itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
       itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
+    return color && isSafeCssColor(color)
+      ? `  --color-${key}: ${color};`
+      : null;
   })
   .join("\n")}
 }
