@@ -243,11 +243,17 @@ function ColorSwatch({
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
-    navigator.clipboard.writeText(color.hex).then(() => {
-      setCopied(true);
-      toast.success(`Copied ${color.hex}`);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    navigator.clipboard
+      .writeText(color.hex)
+      .then(() => {
+        setCopied(true);
+        toast.success(`Copied ${color.hex}`);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((error) => {
+        console.error(`Failed to copy ${color.hex} to clipboard:`, error);
+        toast.error("Couldn't copy to clipboard. Please try again.");
+      });
   };
 
   const isBright = color.hex === "#F8FAFC" || color.hex === "#FFFFFF";
@@ -479,6 +485,11 @@ export default function App() {
     try {
       for (const { src, filename } of ALL_ASSETS) {
         const response = await fetch(src);
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch ${src}: ${response.status} ${response.statusText}`,
+          );
+        }
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -489,7 +500,8 @@ export default function App() {
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
       toast.success("All brand assets downloaded!");
-    } catch {
+    } catch (error) {
+      console.error("Failed to download all brand assets:", error);
       toast.error("Download failed. Please try again.");
     } finally {
       setIsDownloadingAll(false);
