@@ -63,7 +63,11 @@ export async function loadConfig(): Promise<Config> {
     };
     configCache = fullConfig;
     return fullConfig;
-  } catch {
+  } catch (error) {
+    console.warn(
+      `Failed to load runtime config from ${baseUrl}env.json; falling back to defaults.`,
+      error,
+    );
     if (!backendCanisterId) {
       console.error("CANISTER_ID_BACKEND is not set");
       throw new Error("CANISTER_ID_BACKEND is not set");
@@ -111,7 +115,8 @@ async function maybeLoadMockBackend(): Promise<backendInterface | null> {
     };
 
     return mod.mockBackend ?? null;
-  } catch {
+  } catch (error) {
+    console.warn("Failed to load mock backend module:", error);
     return null;
   }
 }
