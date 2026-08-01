@@ -1,18 +1,10 @@
 import sharp from "sharp";
 import { promises as fs } from "fs";
 import path from "path";
+import { fileExists, runScript } from "./lib/fs-utils.js";
 
 const DIMENSION_PATTERN = /^(.+?)\.dim_(\d+)x(\d+)(\.[^.]+)$/;
 const ASSETS_DIR = "src/frontend/dist/assets/generated";
-
-async function fileExists(filePath) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 function getOutputOptions(ext) {
   const extension = ext.toLowerCase();
@@ -105,7 +97,4 @@ async function resizeImages() {
   }
 }
 
-resizeImages().catch((error) => {
-  console.error("Image resize process failed:", error);
-  process.exit(1);
-});
+runScript("Image resize process", resizeImages);

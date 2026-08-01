@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { fileExists, formatBytes, runScript } from "./lib/fs-utils.js";
 
 const DIST_ASSETS_DIR = "src/frontend/dist/assets";
 const GENERATED_DIR = path.join(DIST_ASSETS_DIR, "generated");
@@ -14,15 +15,6 @@ const IMAGE_EXTENSIONS = new Set([
   ".ico",
   ".avif",
 ]);
-
-async function fileExists(filePath) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 async function getAssetFiles(dir) {
   const files = [];
@@ -195,15 +187,4 @@ async function pruneUnusedImages() {
   );
 }
 
-function formatBytes(bytes) {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
-}
-
-pruneUnusedImages().catch((error) => {
-  console.error("Image prune process failed:", error);
-  process.exit(1);
-});
+runScript("Image prune process", pruneUnusedImages);
